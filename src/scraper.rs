@@ -1,6 +1,6 @@
 use reqwest::Client;
 use std::env;
-use tokio::{fs, fs::File, io::AsyncReadExt};
+use tokio::{fs, fs::File};
 use tokio::io::AsyncWriteExt;
 use serde::{Deserialize};
 use serde_json::Value;

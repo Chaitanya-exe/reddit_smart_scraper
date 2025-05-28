@@ -1,3 +1,5 @@
+use super::scraper;
+
 pub fn chunk_text(text: &str, max_words: usize) -> Vec<String> {
     let words: Vec<&str> = text.split_whitespace().collect();
     words

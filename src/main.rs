@@ -1,5 +1,3 @@
-use embedding::get_embedding;
-
 mod store;
 mod scraper;
 mod chunks;
@@ -14,6 +12,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     scraper::put_into_file(posts).await?;
     let posts = scraper::prepare_posts().await?;
     
+    for post in posts{
+
+    }
  
 
     // store::create_collection("reddit_posts", 768).await?;

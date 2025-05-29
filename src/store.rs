@@ -1,4 +1,4 @@
-use reqwest::{Client, StatusCode};
+use reqwest::Client;
 use serde_json::{self, json};
 
 pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn std::error::Error>>{
@@ -7,12 +7,12 @@ pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn st
     let body = json!({
         "vectors":{
             "size": size,
-            "distance": "cosine"
+            "distance": "Cosine"
         }
     });
 
     let response = client.put(&url).json(&body).send().await?;
-    println!("{}",response.status().as_u16());
+    
     if response.status().is_success(){
         println!("collection created: {}", name);
         return Ok(())
@@ -22,7 +22,7 @@ pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn st
     Ok(())
 }
 
-pub async fn upsert_vector(vector: Vec<f32>) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn upsert_vector(vector: Vec<f32>, id: String, payload: String) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
 
     Ok(())

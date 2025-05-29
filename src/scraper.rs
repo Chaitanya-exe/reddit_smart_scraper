@@ -13,6 +13,16 @@ struct AuthResponse{
     scope: String,
 }
 
+#[derive(Debug)]
+pub struct Post{
+    pub id: String,
+    pub title: String,
+    pub self_text: String,
+    pub author: String,
+    pub upvotes: i64,
+    pub downvotes: i64
+}
+
 pub async fn get_access_token() -> Result<String, Box<dyn std::error::Error>>{
     dotenv::dotenv().ok();
     let client = Client::new();
@@ -52,30 +62,31 @@ pub async fn get_subreddit_top(access_token: &str) -> Result<String, Box<dyn std
 
 pub async fn put_into_file(response: String) -> Result<(), Box<dyn std::error::Error>>{
     let mut file = File::create("reddit_posts.json").await?;
-    file.write_all(serde_json::to_string_pretty(&response)?.as_bytes()).await?;
+    file.write_all(response.as_bytes()).await?;
 
     println!("Response written to file successfully");
     Ok(())
 }
 
-pub async fn parse_json() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn prepare_posts() -> Result<Vec<Post>, Box<dyn std::error::Error>> {
     let contents = fs::read_to_string("reddit_posts.json").await?;
     let json: Value = serde_json::from_str(&contents)?;
-
+    let mut post_list: Vec<Post> = Vec::new();
     if let Some(posts) = json["data"]["children"].as_array() {
         for post in posts {
             let data = &post["data"];
-            let title = data["title"].as_str().unwrap_or("No title");
-            let author = data["author"].as_str().unwrap_or("unknown");
+            let id = data["id"].as_str().unwrap_or("No id given").to_string();
+            let title = data["title"].as_str().unwrap_or("No title").to_string();
+            let author = data["author"].as_str().unwrap_or("unknown").to_string();
             let score = data["score"].as_i64().unwrap_or(0);
+            let downvotes = data["down"].as_i64().unwrap_or(0);
+            let content = data["selftext"].as_str().unwrap_or("no content").to_string();
 
-            println!("Title: {}", title);
-            println!("author: {}", author);
-            println!("Score: {}", score);
-            println!("===========================");
+            post_list.push(Post { id, title, self_text: content, author, upvotes: score, downvotes });
+            
         }
     } else {
         println!("unexpected json format");
     }
-    Ok(())
+    Ok(post_list)
 }

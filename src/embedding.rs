@@ -9,12 +9,17 @@ struct EmbeddingRequest <'a>{
 
 #[derive(Deserialize)]
 pub struct EmbeddingResponse{
-    pub embedding: Vec<f32>
+    pub points: Vec<f32>
 }
 
-pub async fn get_embedding(text: &str) -> Result<Vec<f32>, Box<dyn std::error::Error>>{
-    let client = Client::new();
+pub struct Embeddings{
+    pub points: Vec<f32>,
+    pub payload: String
+}
 
+pub async fn get_embedding(text: &str) -> Result<Embeddings, Box<dyn std::error::Error>>{
+    let client = Client::new();
+    let mut response_embedding = Embeddings{points: vec![], payload: text.to_string()};
     let res = client.post("http://localhost:11434/api/embeddings")
         .json(&EmbeddingRequest{
             model: "nomic-embed-text:latest",
@@ -24,5 +29,6 @@ pub async fn get_embedding(text: &str) -> Result<Vec<f32>, Box<dyn std::error::E
         .await?
         .json::<EmbeddingResponse>()
         .await?;
-    Ok(res.embedding)
+    response_embedding.points = res.points;
+    Ok(response_embedding)
 }

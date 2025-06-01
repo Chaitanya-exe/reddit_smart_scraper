@@ -1,6 +1,8 @@
 use reqwest::Client;
 use serde_json::{self, json};
 
+use crate::embedding::Embeddings;
+
 pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn std::error::Error>>{
     let client = Client::new();
     let url = format!("http://localhost:6333/collections/{}", name);
@@ -22,8 +24,10 @@ pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn st
     Ok(())
 }
 
-pub async fn upsert_vector(vector: Vec<f32>, id: String, payload: String) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn upsert_vector(embeddings: Embeddings, id: String) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
+    let request_body = &embeddings.payload;
+
 
     Ok(())
 }

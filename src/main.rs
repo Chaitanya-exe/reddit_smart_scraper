@@ -13,7 +13,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let posts = scraper::prepare_posts().await?;
     
     for post in posts{
+        let post_chunk = chunks::chunk_text(&post, 128);
 
+        for (i, chunk) in post_chunk.iter().enumerate() {
+            let chunk_id = format!("{}_chunk_{}", post.id, i);
+            let embedding_struct = embedding::get_embedding(&chunk).await?;
+
+            
+        }
+        
     }
  
 

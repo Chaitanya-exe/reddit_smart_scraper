@@ -20,7 +20,8 @@ pub struct Post{
     pub self_text: String,
     pub author: String,
     pub upvotes: i64,
-    pub downvotes: i64
+    pub downvotes: i64,
+    pub url: String
 }
 
 pub async fn get_access_token() -> Result<String, Box<dyn std::error::Error>>{
@@ -81,8 +82,9 @@ pub async fn prepare_posts() -> Result<Vec<Post>, Box<dyn std::error::Error>> {
             let score = data["score"].as_i64().unwrap_or(0);
             let downvotes = data["down"].as_i64().unwrap_or(0);
             let content = data["selftext"].as_str().unwrap_or("no content").to_string();
+            let url = data["url"].as_str().unwrap_or("url not found").to_string();
 
-            post_list.push(Post { id, title, self_text: content, author, upvotes: score, downvotes });
+            post_list.push(Post { id, title, self_text: content, author, upvotes: score, downvotes, url });
             
         }
     } else {

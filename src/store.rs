@@ -1,12 +1,14 @@
 use reqwest::Client;
 use uuid::Uuid;
-use serde_json::{self, json};
+use serde_json::{self, json, Value};
 use std::env;
 
 use crate::scraper::Post;
 use crate::embedding::Embeddings;
 
+pub struct VectorResponse{
 
+}
 
 pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn std::error::Error>>{
     let client = Client::new();
@@ -50,7 +52,7 @@ pub async fn upsert_vector(embeddings: Embeddings, id: String, post_struct: &Pos
         .json(&request_body)
         .send()
         .await?
-        .json::<serde_json::Value>()
+        .json::<Value>()
         .await?;
 
     //resutl validatiaon    
@@ -92,4 +94,32 @@ pub async fn upsert_vector(embeddings: Embeddings, id: String, post_struct: &Pos
         println!("❌ Failed to store post: {:?}", insert_response.text().await?);
     }
     Ok(())  
+}
+
+pub async fn search_similar_vectors(query: Vec<f32>) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let client = Client::new();
+    let search_body = json!({
+        "vector" : query,
+        "limit": 10,
+        "with_payload": true
+    });
+    let url = format!("{}collections/{}/points/search", env::var("BASE_URL").unwrap(), env::var("COLLECTION_NAME").unwrap());
+    let response = client.post(&url)
+        .json(&search_body)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    let parsed = serde_json::from_str::<Value>(&response).unwrap();
+    let texts = parsed["result"].as_array().unwrap().iter()
+        .map(|r| {
+            if let Some(res) = r["payload"]["self_text"].as_str() {
+                return res.to_string()
+            } else{
+                return String::from("No value")
+            }
+        })
+        .collect();
+    Ok(texts)
 }

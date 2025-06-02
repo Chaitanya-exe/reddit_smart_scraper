@@ -24,6 +24,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
         }
         
     }
+
+    let user_question = "What are these posts talking about?";
+
+    let query_vec = embedding::get_embedding(user_question).await?;
+
+    let vectors = store::search_similar_vectors(query_vec.points).await?;
+
+    for string in vectors.iter() {
+        println!("{}", string);
+    }
  
     Ok(())
 }

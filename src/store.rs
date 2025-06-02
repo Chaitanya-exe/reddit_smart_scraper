@@ -1,7 +1,12 @@
 use reqwest::Client;
+use uuid::Uuid;
 use serde_json::{self, json};
+use std::env;
 
+use crate::scraper::Post;
 use crate::embedding::Embeddings;
+
+
 
 pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn std::error::Error>>{
     let client = Client::new();
@@ -24,10 +29,67 @@ pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn st
     Ok(())
 }
 
-pub async fn upsert_vector(embeddings: Embeddings, id: String) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn upsert_vector(embeddings: Embeddings, id: String, post_struct: &Post) -> Result<(), Box<dyn std::error::Error>> {
+    //request initializezrs
     let client = Client::new();
-    let request_body = &embeddings.payload;
+    let db_url = format!("http://localhost:6333/collections/{}/points/search", env::var("COLLECTION_NAME").unwrap());
+    let request_body = json!({
+        "vector": &embeddings.points,
+        "limit":1,
+        "with_payload":true,
+        "filter":{
+            "must":[{
+                "key":"post_id",
+                "match":{ "value": &id}
+            }]
+        }
+    });
 
+    //database api request
+    let db_response = client.post(&db_url)
+        .json(&request_body)
+        .send()
+        .await?
+        .json::<serde_json::Value>()
+        .await?;
 
-    Ok(())
+    //resutl validatiaon    
+    if let Some(arr) = db_response["result"].as_array() {
+        if !arr.is_empty() {
+            println!("⚠️ Post ID {} already exists in vector DB", &id);
+            return Ok(());
+        }
+    }
+
+    //insert new vector in case of new post
+    let auto_id = Uuid::new_v4().to_string();
+    let insert_body = json!({
+        "points":[{
+            "id": &auto_id,
+            "vector": &embeddings.points,
+            "payload":{
+                "post_id": &id,
+                "title": &post_struct.title,
+                "self_text" : &post_struct.self_text,
+                "upvotes": &post_struct.upvotes,
+                "downvotes" : &post_struct.downvotes,
+                "author" : &post_struct.author,
+                "url" : &post_struct.url
+            }
+        }]
+    }); 
+
+    let url = format!("http://localhost:6333/collections/{}/points", env::var("COLLECTION_NAME").unwrap());
+    let insert_response = client.put(&url)
+        .json(&insert_body)
+        .send()
+        .await?;
+
+    if insert_response.status().is_success() {
+        println!("✅ Stored vector for post {}", post_struct.id);
+        println!("{}", insert_response.text().await?);
+    } else {
+        println!("❌ Failed to store post: {:?}", insert_response.text().await?);
+    }
+    Ok(())  
 }

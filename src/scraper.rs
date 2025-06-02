@@ -75,6 +75,7 @@ pub async fn prepare_posts() -> Result<Vec<Post>, Box<dyn std::error::Error>> {
     let mut post_list: Vec<Post> = Vec::new();
     if let Some(posts) = json["data"]["children"].as_array() {
         for post in posts {
+
             let data = &post["data"];
             let id = data["id"].as_str().unwrap_or("No id given").to_string();
             let title = data["title"].as_str().unwrap_or("No title").to_string();
@@ -90,5 +91,6 @@ pub async fn prepare_posts() -> Result<Vec<Post>, Box<dyn std::error::Error>> {
     } else {
         println!("unexpected json format");
     }
+    println!("Posts prepared successfully");
     Ok(post_list)
 }

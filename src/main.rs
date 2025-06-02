@@ -13,18 +13,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let posts = scraper::prepare_posts().await?;
     
     for post in posts{
+        let post_ref = &post;
         let post_chunk = chunks::chunk_text(&post, 128);
 
         for (i, chunk) in post_chunk.iter().enumerate() {
-            let chunk_id = format!("{}_chunk_{}", post.id, i);
+            let chunk_id = format!("{}_chunk_{}", &post_ref.id , i);
             let embedding_struct = embedding::get_embedding(&chunk).await?;
 
-            
+            store::upsert_vector(embedding_struct, chunk_id, post_ref).await?;
         }
         
     }
  
-
-    // store::create_collection("reddit_posts", 768).await?;
     Ok(())
 }

@@ -2,6 +2,7 @@ mod store;
 mod scraper;
 mod chunks;
 mod embedding;
+mod ollama;
 
 
 #[tokio::main]
@@ -29,11 +30,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 
     let query_vec = embedding::get_embedding(user_question).await?;
 
-    let vectors = store::search_similar_vectors(query_vec.points).await?;
+    let search_result = store::search_similar_vectors(&query_vec.points, 5).await?;
 
-    for string in vectors.iter() {
-        println!("{}", string);
-    }
- 
+    let chat_response = ollama::answer_with_context(search_result, user_question.to_string()).await?;
+    
+    println!("Got response from ollama: \n{}", chat_response);
     Ok(())
 }

@@ -96,13 +96,15 @@ pub async fn upsert_vector(embeddings: Embeddings, id: String, post_struct: &Pos
     Ok(())  
 }
 
-pub async fn search_similar_vectors(query: Vec<f32>) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+pub async fn search_similar_vectors(query: &Vec<f32>, top_k: usize) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let client = Client::new();
     let search_body = json!({
         "vector" : query,
-        "limit": 10,
+        "limit": 5,
+        // "top" : top_k,
         "with_payload": true
     });
+
     let url = format!("{}collections/{}/points/search", env::var("BASE_URL").unwrap(), env::var("COLLECTION_NAME").unwrap());
     let response = client.post(&url)
         .json(&search_body)

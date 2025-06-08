@@ -1,4 +1,3 @@
 /target
 .env
-reddit_posts.json
 qdrant_storage/

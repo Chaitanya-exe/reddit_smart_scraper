@@ -26,7 +26,7 @@ pub async fn answer_with_context(
             "role": "user",
             "content" : &prompt
         }],
-        "stream": true
+        "stream": false
     });
     
     // start ollama chat 

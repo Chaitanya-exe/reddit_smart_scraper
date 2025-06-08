@@ -16,6 +16,7 @@ pub struct Embeddings{
     pub points: Vec<f32>,
 }
 
+// generates embeddings for vector storage, requires chunked data.
 pub async fn get_embedding(text: &str) -> Result<Embeddings, Box<dyn std::error::Error>>{
     let client = Client::new();
     let mut response_embedding = Embeddings{points: vec![]};
@@ -30,7 +31,6 @@ pub async fn get_embedding(text: &str) -> Result<Embeddings, Box<dyn std::error:
         .await?;
     
     response_embedding.points = res.embedding;
-    println!("embeddings prepared successfully");
 
     Ok(response_embedding)
 }

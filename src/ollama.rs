@@ -36,11 +36,11 @@ pub async fn answer_with_context(
 
     let preview_len = std::cmp::min(200, res.len());
 
-    println!(
-        "Response preview: (first {} characters): {}",
-        preview_len,
-        &res[..preview_len]
-    );
+    // println!(
+    //     "Response preview: (first {} characters): {}",
+    //     preview_len,
+    //     &res[..preview_len]
+    // );
 
     if res.contains('\n') {
         let mut final_content = String::new();

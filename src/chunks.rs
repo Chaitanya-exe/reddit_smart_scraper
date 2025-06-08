@@ -1,6 +1,7 @@
 use crate::scraper::Post;
 
 
+// chunks the data for vector preparation.
 pub fn chunk_text(post: &Post, max_words: usize) -> Vec<String> {
     let combined = format!("ID: {}\nTitle: {}\nAuthor: {}\nContent: {}\nUpvotes: {}\nDownvotes: {}\nurl: {}",
         post.id,

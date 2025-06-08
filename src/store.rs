@@ -34,7 +34,7 @@ pub async fn create_collection(name: &str, size: usize) -> Result<(), Box<dyn st
 pub async fn upsert_vector(embeddings: Embeddings, id: String, post_struct: &Post) -> Result<(), Box<dyn std::error::Error>> {
     //request initializezrs
     let client = Client::new();
-    let db_url = format!("http://localhost:6333/collections/{}/points/search", env::var("COLLECTION_NAME").unwrap());
+    let db_url = format!("http://localhost:6333/collections/reddit_posts/points/search");
     let request_body = json!({
         "vector": &embeddings.points,
         "limit":1,
@@ -96,16 +96,18 @@ pub async fn upsert_vector(embeddings: Embeddings, id: String, post_struct: &Pos
     Ok(())  
 }
 
+// searches vector database for semantic searches
 pub async fn search_similar_vectors(query: &Vec<f32>, top_k: usize) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let client = Client::new();
     let search_body = json!({
         "vector" : query,
-        "limit": 5,
+        "limit": 10,
         // "top" : top_k,
         "with_payload": true
     });
 
-    let url = format!("{}collections/{}/points/search", env::var("BASE_URL").unwrap(), env::var("COLLECTION_NAME").unwrap());
+    //fetch vectors from database
+    let url = format!("http://localhost:6333/collections/reddit_posts/points/search");
     let response = client.post(&url)
         .json(&search_body)
         .send()
@@ -113,6 +115,7 @@ pub async fn search_similar_vectors(query: &Vec<f32>, top_k: usize) -> Result<Ve
         .text()
         .await?;
 
+    // parse the vectos with payload
     let parsed = serde_json::from_str::<Value>(&response).unwrap();
     let texts = parsed["result"].as_array().unwrap().iter()
         .map(|r| {

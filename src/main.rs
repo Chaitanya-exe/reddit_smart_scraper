@@ -1,3 +1,5 @@
+
+
 mod store;
 mod scraper;
 mod chunks;
@@ -7,10 +9,14 @@ mod ollama;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>{
-    let token = scraper::get_access_token().await?;
-    let posts = scraper::get_subreddit_top(&token).await?;
+    // uncomment when required api keys are present, till then dummy post data is used
+    // checkout the scraper implementation in scraper.rs file
+    // let token = scraper::get_access_token().await?;
+    // let posts = scraper::get_subreddit_top(&token).await?;
     
-    scraper::put_into_file(posts).await?;
+
+    store::create_collection("reddit_posts", 768).await?;
+
     let posts = scraper::prepare_posts().await?;
     
     for post in posts{

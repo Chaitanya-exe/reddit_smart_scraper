@@ -37,6 +37,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let query_vec = embedding::get_embedding(user_question).await?;
 
     let search_result = store::search_similar_vectors(&query_vec.points, 5).await?;
+    
+    println!("Generating answer...");
 
     let chat_response = ollama::answer_with_context(search_result, user_question.to_string()).await?;
     
